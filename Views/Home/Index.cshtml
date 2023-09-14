@@ -1,0 +1,23 @@
+﻿@model IEnumerable<UniApi.Models.Produto>
+<h1>Lista de Produtos e Categorias</h1>
+<br /><br />
+
+<table class="table bg-light">
+    <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Categoria</th>
+        <th>Categoria ID</th>
+    </tr>
+    @foreach (var i in @Model)
+    {
+        <tr>
+            <td>@i.ProdutoId</td>
+            <td>@i.ProdutoNome</td>
+            <td>@i.Descricao</td>
+            <td>@i.Categorias.CategoriaNome</td>
+            <td>@i.CategoriaId</td>
+        </tr>
+    }
+</table>
