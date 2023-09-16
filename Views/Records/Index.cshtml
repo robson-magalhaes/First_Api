@@ -1,0 +1,51 @@
+﻿@model IEnumerable<UniApi.Models.Produto>
+
+@{
+    ViewData["Title"] = "Sales Records";
+}
+
+<h1>Filtrando por Categoria</h1>
+
+<br />
+
+<div class="row">
+    <div class="col-md-6">
+        <form class="form-horizontal" asp-action="SimpleSearch">
+            <div class="form-group">
+                @* <label asp-for="CategoriaId" class="control-label"></label>
+                <select asp-for="CategoriaId" asp-items="ViewBag.CategoriaId"></select> *@
+                <label for="CategoriaId" class="control-label"></label>
+                <select name="CategoriaId" asp-items="ViewBag.CategoriaId"></select>
+            </div>
+            <br />
+            <div class="form-group">
+                <div class="col-lg-10 col-lg-offset-2">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<br />
+
+<table class="table bg-light">
+    <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Categoria ID</th>
+        <th>Categoria</th>
+    </tr>
+
+    @foreach (var i in @Model)
+    {
+        <tr>
+            <td>@i.ProdutoId</td>
+            <td>@i.ProdutoNome</td>
+            <td>@i.Descricao</td>
+            <td>@i.Categorias.CategoriaNome</td>
+            <td>@i.CategoriaId</td>
+        </tr>
+    }
+</table>

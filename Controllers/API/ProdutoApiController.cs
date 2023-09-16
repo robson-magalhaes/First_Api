@@ -23,9 +23,23 @@ namespace UniApi.Controllers.API
         }
 
         [HttpGet("/prod/{id:int}")]
-        public async Task<Produto> GetAll(int id)
+
+        public async Task<Produto> GetId(int id)
         {
-            return await _context.Produtos.FindAsync(id);
+            //var ok = _context.Produtos.Any(x => x.CategoriaId == id);
+            //if (!ok)
+            //{
+            //    throw new Exception("Id informada nao existe");
+            //}
+            try
+            {
+                var model = await _context.Produtos.FirstOrDefaultAsync(x => x.ProdutoId == id);
+                return model;
+            }
+            catch (ApplicationException ex)
+            {
+                throw new (ex.Message);
+            }
         }
 
         [HttpGet("/produto")]

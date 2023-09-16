@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UniApi.Context;
+using UniApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,8 @@ builder.Services.AddControllersWithViews();
 //builder.Services.AddDbContext<AppDbContext>();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MinhaString")));
+
+builder.Services.AddScoped<Record>();
 
 var app = builder.Build();
 
