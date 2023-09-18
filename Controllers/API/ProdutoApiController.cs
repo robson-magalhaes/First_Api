@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using UniApi.Context;
+using UniApi.Exceptions;
 using UniApi.Models;
 
 namespace UniApi.Controllers.API
@@ -15,30 +19,29 @@ namespace UniApi.Controllers.API
             _context = context;
         }
 
-        [HttpGet("/prod")]
+        [HttpGet("/")]
         public List<Produto> Get()
         {
             var c = _context.Produtos;
             return c.ToList();
         }
 
-        [HttpGet("/prod/{id:int}")]
+        [HttpGet("/{id:int}")]
 
         public async Task<Produto> GetId(int id)
         {
-            //var ok = _context.Produtos.Any(x => x.CategoriaId == id);
-            //if (!ok)
-            //{
-            //    throw new Exception("Id informada nao existe");
-            //}
             try
             {
                 var model = await _context.Produtos.FirstOrDefaultAsync(x => x.ProdutoId == id);
+                if (model == null)
+                {
+                    throw new Exception($"O Id de numero {id}, não encontrado!!");
+                }
                 return model;
             }
             catch (ApplicationException ex)
             {
-                throw new (ex.Message);
+                throw new(ex.Message);
             }
         }
 
@@ -46,66 +49,101 @@ namespace UniApi.Controllers.API
         public List<string> GetAllProduto()
         {
             var result = _context.Produtos.Include(x => x.Categorias);
-            List<string> lista = new List<string>();
 
-            foreach (var i in result)
+            List<string> lista = new List<string>();
+            List<string> listaFinal = new List<string>();
+            Produto[] vet = new Produto[result.Count()];
+            foreach (var b in result)
             {
-                lista.Add("ID: "+i.ProdutoId);
-                lista.Add("Nome: " + i.ProdutoNome);
-                lista.Add("Descrição: " + i.Descricao);
-                lista.Add("Categoria: " + i.Categorias?.CategoriaNome);
+                //string NomeString =
+                //    $"Id : {b.ProdutoId}, Nome : {b.ProdutoNome}, Descrição : {b.Descricao}, Categoria : {b.Categorias?.CategoriaNome}";
+
+                //string[] vet = NomeString.Split("Id");
+                lista.Add("Id : " + b.ProdutoId);
+                lista.Add("Nome: " + b.ProdutoNome);
+                lista.Add("Descrição: " + b.Descricao);
+                lista.Add("Categoria: " + b.Categorias?.CategoriaNome);
+                var parte = lista.Take(result.Count()).ToList();
+                listaFinal.AddRange(parte);
+                lista.Clear();
+                //lista.AddRange(vet);
             }
-            return lista;
+
+            return listaFinal.ToList();
         }
 
         [HttpGet("/produto/{id:int}")]
         public List<string> GetIdProduto(int id)
         {
+            List<string> l = new List<string> { " O Id informado nao é valido! " };
+            try
+            {
                 var result = _context.Produtos.Include(x => x.Categorias).FirstOrDefault(x => x.ProdutoId == id);
-                Produto prods = new Produto();
-                prods.ProdutoId = id;
-                prods.ProdutoNome = result?.ProdutoNome;
-                prods.Descricao = result?.Descricao;
-                var rs = _context.Produtos.Include(x => x.Categorias).FirstOrDefault(x => x.Categorias.CategoriaId == id);
-                if(rs == null)
-                {
-                    List<string> l = new List<string> {"Produto não foi encontrado!"};
-                    return l;
-                }
-                string catNome = rs.Categorias.CategoriaNome;
+                Produto a = new Produto();
+
                 List<string> lista = new List<string>();
-                lista.Add("ID: " + prods.ProdutoId);
-                lista.Add("Nome Do Produto: " + prods.ProdutoNome);
-                lista.Add("Descrição: " + prods.Descricao);
-                lista.Add("Categoria: " + catNome);
+                if (result == null)
+                    return l;
+
+                lista.Add("Id : " + result?.ProdutoId);
+                lista.Add("Nome: " + result?.ProdutoNome);
+                lista.Add("Descrição: " + result?.Descricao);
+                lista.Add("Categoria: " + result?.Categorias?.CategoriaNome);
                 return lista;
+            }
+            catch
+            {
+                return l;
+            }
         }
 
-        [HttpPost("/prod")]
-        public Produto Post(Produto prod)
+        [HttpPost("/")]
+        public async Task<IActionResult> Post(Produto prod)
         {
-            _context.Produtos.Add(prod);
-            _context.SaveChanges();
-            return prod;
+            try
+            {
+                _context.Produtos.Add(prod);
+                await _context.SaveChangesAsync();
+                return Ok(prod);
+            }
+            catch (SqliteException ex)
+            {
+                throw new SqliteException(ex.Message, ex.ErrorCode);
+            }
+            catch (Exception e)
+            {
+                throw new("Error: " + e.Message);
+            }
         }
 
-        [HttpPut("/prod/{id:int}")]
+        [HttpPut("/{id:int}")]
         public async Task<IActionResult> Put(Produto prod, int id)
         {
             var model = _context.Produtos.FirstOrDefault(x => x.ProdutoId == id);
             if (!ModelState.IsValid)
             {
-                throw new Exception("Dados foram passados errado");
+                throw new Exception("As informações não foram passadas corretamente");
             }
-            model.ProdutoNome = prod.ProdutoNome;
-            model.Descricao = prod.Descricao;
-            model.CategoriaId = prod.CategoriaId;
-            _context.Update(model);
-            await _context.SaveChangesAsync();
-            return Ok(model);
+            try
+            {
+                model.ProdutoNome = prod.ProdutoNome;
+                model.Descricao = prod.Descricao;
+                model.CategoriaId = prod.CategoriaId;
+                _context.Update(model);
+                await _context.SaveChangesAsync();
+                return Ok(model);
+            }
+            catch(DbUpdateConcurrencyException ex)
+            {
+                throw new DbUpdateConcurrencyException(ex.Message);
+            }
+            catch(ExceptionPersonal e)
+            {
+                throw new ExceptionPersonal("As informações não foram passadas corretamente");
+            }
         }
 
-        [HttpDelete("/prod/{id:int}")]
+        [HttpDelete("/{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
             var model = _context.Produtos.FirstOrDefault(x => x.ProdutoId == id);
@@ -113,9 +151,16 @@ namespace UniApi.Controllers.API
             {
                 throw new Exception("Dados foram passados errado");
             }
-            _context.Remove(model);
-            await _context.SaveChangesAsync();
-            return Ok(model);
+            try
+            {
+                _context.Remove(model);
+                await _context.SaveChangesAsync();
+                return Ok(model);
+            }
+            catch
+            {
+                throw new Exception($"Produto com a Id '{id}' não existe.");
+            }
         }
 
 

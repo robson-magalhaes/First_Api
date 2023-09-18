@@ -15,7 +15,11 @@ namespace UniApi.Controllers.API
         {
             _context = context;
         }
-
+        [HttpGet("/categoria")]
+        public List<Categoria> Get()
+        {
+            return _context.Categorias.ToList();
+        }
         [HttpPost("/categoria")]
         public Categoria Post(Categoria prod)
         {

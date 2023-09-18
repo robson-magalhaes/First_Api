@@ -16,7 +16,6 @@ namespace UniApi.Controllers
             _context = context;
         }
 
-        [HttpGet("/")]
         public async Task<IActionResult> Index()
         {
             var c = _context.Produtos.Include(x=>x.Categorias);
