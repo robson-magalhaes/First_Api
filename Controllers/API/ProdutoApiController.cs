@@ -52,13 +52,9 @@ namespace UniApi.Controllers.API
 
             List<string> lista = new List<string>();
             List<string> listaFinal = new List<string>();
-            Produto[] vet = new Produto[result.Count()];
+
             foreach (var b in result)
             {
-                //string NomeString =
-                //    $"Id : {b.ProdutoId}, Nome : {b.ProdutoNome}, Descrição : {b.Descricao}, Categoria : {b.Categorias?.CategoriaNome}";
-
-                //string[] vet = NomeString.Split("Id");
                 lista.Add("Id : " + b.ProdutoId);
                 lista.Add("Nome: " + b.ProdutoNome);
                 lista.Add("Descrição: " + b.Descricao);
@@ -66,9 +62,7 @@ namespace UniApi.Controllers.API
                 var parte = lista.Take(result.Count()).ToList();
                 listaFinal.AddRange(parte);
                 lista.Clear();
-                //lista.AddRange(vet);
             }
-
             return listaFinal.ToList();
         }
 
@@ -133,11 +127,11 @@ namespace UniApi.Controllers.API
                 await _context.SaveChangesAsync();
                 return Ok(model);
             }
-            catch(DbUpdateConcurrencyException ex)
+            catch (DbUpdateConcurrencyException ex)
             {
                 throw new DbUpdateConcurrencyException(ex.Message);
             }
-            catch(ExceptionPersonal e)
+            catch (ExceptionPersonal e)
             {
                 throw new ExceptionPersonal("As informações não foram passadas corretamente");
             }
