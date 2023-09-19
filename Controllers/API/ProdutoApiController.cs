@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Connections.Features;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using UniApi.Context;
@@ -20,10 +18,22 @@ namespace UniApi.Controllers.API
         }
 
         [HttpGet("/")]
-        public List<Produto> Get()
+        public async Task<IActionResult> Get()
         {
-            var c = _context.Produtos;
-            return c.ToList();
+            var model = _context.Produtos.Include(x=>x.Categorias).ToList();
+            List<object> lista = new List<object>();
+            foreach (var i in model)
+            {
+                var info = new
+                {
+                    ProdutoId = i.ProdutoId,
+                    ProdutoNome = i.ProdutoNome,
+                    Descricao = i.Descricao,
+                    Categoria = i.Categorias?.CategoriaNome ?? "Não tem categoria"
+                };
+                lista.Add(info);
+            }
+            return new JsonResult(lista);
         }
 
         [HttpGet("/{id:int}")]
@@ -42,52 +52,6 @@ namespace UniApi.Controllers.API
             catch (ApplicationException ex)
             {
                 throw new(ex.Message);
-            }
-        }
-
-        [HttpGet("/produto")]
-        public List<string> GetAllProduto()
-        {
-            var result = _context.Produtos.Include(x => x.Categorias);
-
-            List<string> lista = new List<string>();
-            List<string> listaFinal = new List<string>();
-
-            foreach (var b in result)
-            {
-                lista.Add("Id : " + b.ProdutoId);
-                lista.Add("Nome: " + b.ProdutoNome);
-                lista.Add("Descrição: " + b.Descricao);
-                lista.Add("Categoria: " + b.Categorias?.CategoriaNome);
-                var parte = lista.Take(result.Count()).ToList();
-                listaFinal.AddRange(parte);
-                lista.Clear();
-            }
-            return listaFinal.ToList();
-        }
-
-        [HttpGet("/produto/{id:int}")]
-        public List<string> GetIdProduto(int id)
-        {
-            List<string> l = new List<string> { " O Id informado nao é valido! " };
-            try
-            {
-                var result = _context.Produtos.Include(x => x.Categorias).FirstOrDefault(x => x.ProdutoId == id);
-                Produto a = new Produto();
-
-                List<string> lista = new List<string>();
-                if (result == null)
-                    return l;
-
-                lista.Add("Id : " + result?.ProdutoId);
-                lista.Add("Nome: " + result?.ProdutoNome);
-                lista.Add("Descrição: " + result?.Descricao);
-                lista.Add("Categoria: " + result?.Categorias?.CategoriaNome);
-                return lista;
-            }
-            catch
-            {
-                return l;
             }
         }
 
