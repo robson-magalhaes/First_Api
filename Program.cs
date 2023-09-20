@@ -10,9 +10,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MinhaString")));
 
+
 builder.Services.AddScoped<Record>();
+builder.Services.AddScoped<ConversaoJsonServices>();
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
