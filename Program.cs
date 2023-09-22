@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UniApi.Context;
 using UniApi.Services;
+using UniApi.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,12 +11,9 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MinhaString")));
 
-
-builder.Services.AddScoped<Record>();
-builder.Services.AddScoped<ConversaoJsonServices>();
+builder.Services.AddScoped<IConversaoJsonServices, ConversaoJsonServices>();
 
 var app = builder.Build();
-
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

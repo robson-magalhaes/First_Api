@@ -4,10 +4,11 @@ using System.Linq;
 using UniApi.Context;
 using UniApi.Exceptions;
 using UniApi.Models;
+using UniApi.Services.Interfaces;
 
 namespace UniApi.Services
 {
-    public class ConversaoJsonServices
+    public class ConversaoJsonServices : IConversaoJsonServices
     {
         readonly AppDbContext _context;
 

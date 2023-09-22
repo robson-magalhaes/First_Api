@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using UniApi.Context;
 using UniApi.Models;
 
-namespace UniApi.Controllers.API
+namespace UniApi.Controllers
 {
     [ApiController]
     public class CategoriaApiController : Controller
@@ -42,7 +42,7 @@ namespace UniApi.Controllers.API
         public Categoria Delete(int id)
         {
             var model = _context.Categorias.Find(id);
-            if(model != null)
+            if (model != null)
             {
                 _context.Categorias.Remove(model);
                 _context.SaveChanges();
